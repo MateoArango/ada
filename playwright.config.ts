@@ -32,6 +32,17 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Disable CSS animations and transitions.
+     * 'reduce' emulates the prefers-reduced-motion media query,
+     * which Angular Material respects to skip animations entirely. */
+    reducedMotion: 'reduce',
+
+    /* Per-action timeout (e.g. fill, click, waitFor) */
+    actionTimeout: 15000,
+
+    /* Navigation timeout (e.g. page.goto, page.waitForNavigation) */
+    navigationTimeout: 30000,
   },
 
   /* Configure projects for major browsers */
