@@ -1,8 +1,16 @@
 import { test, expect } from './fixtures';
 
-test('Full Path - Create Active', async ({ page }) => {
-  await test.step('Login and Ubicación y registro', async () => {
-    await page.goto('https://bieneselectricos-qa.adacsc.co/');
+test.describe('Activos - Creación y Registro', () => {
+
+  test('Full Path - Create Active', async ({ page }) => {
+    // Shared Locators
+    const stepper = page.getByTestId('activesCreateStepper');
+    const nextBtn = page.getByRole('button', { name: 'Siguiente' });
+    const calendarBtn = page.getByRole('button', { name: 'Open calendar' });
+    const dateBtn = page.locator('button[aria-current="date"]');
+
+  await test.step('Login - Register and Ubication', async () => {
+    await page.goto('/');
     await page.getByTestId('loginUserFieldContainer').getByText('Usuario').click();
     await page.getByRole('textbox', { name: 'Usuario' }).fill('qa');
     await page.getByRole('textbox', { name: 'Usuario' }).press('Enter');
@@ -17,15 +25,19 @@ test('Full Path - Create Active', async ({ page }) => {
     //assertion 'Cargando más placas...'
     await expect(page.getByText('Cargando más placas...')).toBeVisible();
     // Selects the first option matching the pattern, regardless of the dynamic ID
-    await page.getByTestId(/activesCreatePlacaOption\d+/).first().click();
-    //await page.getByTestId('activesCreatePlacaOption00000359').getByLabel('', { exact: true }).check();
+    const plateOption = page.getByTestId(/activesCreatePlacaOption\d+/).first();
 
-    await page.getByRole('button', { name: 'Siguiente' }).click();
+    const plateText = await plateOption.innerText();
+    console.log('Plate:', plateText);
+
+    await plateOption.click();
+
+    await nextBtn.click();
     await page.getByTestId('activesCreateDepartamento').waitFor({ state: 'visible' });
 
     await expect(page.locator('span').filter({ hasText: /^Ubicación y registro$/ })).toBeVisible();
 
-    await expect(page.getByTestId('activesCreateStepper')).toContainText('Sub paso 1 de 1');
+    await expect(stepper).toContainText('Sub paso 1 de 1');
 
 
     await page.getByTestId('activesCreateDepartamento').getByText('Departamento').click();
@@ -58,11 +70,11 @@ test('Full Path - Create Active', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Descripción' }).fill('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel metus non leo interdum laoreet. Sed ut erat hendrerit, commodo nunc eu, malesuada metus. Mauris ut tellus nec augue bibendum mollis a vel urna.');
 
     // Final verification
-    await expect(page.getByRole('button', { name: 'Siguiente' })).toBeEnabled();
+    await expect(nextBtn).toBeEnabled();
   
     //All camps filled
-    await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos13 de 13');
-    await page.getByRole('button', { name: 'Siguiente' }).click();
+    await expect(stepper).toContainText('Campos13 de 13');
+    await nextBtn.click();
     await page.getByTestId('activesCreateProyectoProyecto').waitFor({ state: 'visible' });
 
 
@@ -70,8 +82,8 @@ test('Full Path - Create Active', async ({ page }) => {
 
   await test.step('Proyecto e infraestructura Sub Step 1-2', async () => {
     //Proyecto e infraestructura Sub Step 1-2
-    await expect(page.getByTestId('activesCreateStepper')).toContainText('Proyecto e infraestructura');
-    await expect(page.getByTestId('activesCreateStepper')).toContainText('Sub paso 1 de 2');
+    await expect(stepper).toContainText('Proyecto e infraestructura');
+    await expect(stepper).toContainText('Sub paso 1 de 2');
 
     await page.getByTestId('activesCreateProyectoProyecto').getByText('Proyecto').click();
 
@@ -92,8 +104,8 @@ test('Full Path - Create Active', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Nodo anterior' }).fill('aaa22333aaaaa');
     await page.getByTestId('activesCreateProyectoNodoActual').getByText('Nodo actual').click();
     await page.getByRole('textbox', { name: 'Nodo actual' }).fill('aaa22333aaaaa');
-    await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos7 de 7');
-    await page.getByRole('button', { name: 'Siguiente' }).click();
+    await expect(stepper).toContainText('Campos7 de 7');
+    await nextBtn.click();
     await page.getByTestId('activesCreateResponsableUsuarioBien').waitFor({ state: 'visible' });
 
   });
@@ -102,8 +114,8 @@ test('Full Path - Create Active', async ({ page }) => {
   //Responsible and contracts Sub Step 2-2
 
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Responsable y contratos');
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Sub paso 2 de 2');
+  await expect(stepper).toContainText('Responsable y contratos');
+  await expect(stepper).toContainText('Sub paso 2 de 2');
 
 
 
@@ -130,8 +142,8 @@ test('Full Path - Create Active', async ({ page }) => {
 
 
   await page.getByTestId('activesCreateProyectoFechaSuscripcionContratoAom').getByRole('button', { name: 'Open calendar' }).click();
-  await page.locator('button[aria-current="date"]').waitFor({ state: 'visible' });
-  await page.locator('button[aria-current="date"]').click();
+  await dateBtn.waitFor({ state: 'visible' });
+  await dateBtn.click();
 
   await page.locator('bds-form-field', { hasText: 'Número de contacto operador A.O.M' }).click();
   await page.locator('bds-form-field', { hasText: 'Número de contacto operador A.O.M' }).locator('input').fill('2111112233');
@@ -152,20 +164,20 @@ test('Full Path - Create Active', async ({ page }) => {
   await page.getByRole('textbox', { name: 'N.º de pólizas de contratos' }).fill('lorem ipsum dolor sit amet');
 
   await page.getByTestId('activesCreateProyectoFechaInicialPolizasObra').getByRole('button', { name: 'Open calendar' }).click();
-  await page.locator('button[aria-current="date"]').waitFor({ state: 'visible' });
-  await page.locator('button[aria-current="date"]').click();
+  await dateBtn.waitFor({ state: 'visible' });
+  await dateBtn.click();
 
   await page.getByTestId('activesCreateProyectoFechaFinalPolizasObra').getByRole('button', { name: 'Open calendar' }).click();
-  await page.locator('button[aria-current="date"]').waitFor({ state: 'visible' });
-  await page.locator('button[aria-current="date"]').click();
+  await dateBtn.waitFor({ state: 'visible' });
+  await dateBtn.click();
 
   await page.getByTestId('activesCreateResponsableTipoPolizaObra').getByText('Tipo de pólizas de contratos de obra').click();
   await page.getByRole('textbox', { name: 'Tipo de pólizas de contratos de obra' }).fill('lorem ipsum dolor sit amet');
   await page.getByTestId('activesCreateResponsableObservacionEstado').getByText('Observación estado').click();
   await page.getByRole('textbox', { name: 'Observación estado' }).fill('lorem ipsum dolor sit amet');
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos18 de 18');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(stepper).toContainText('Campos18 de 18');
+  await nextBtn.click();
   await page.getByTestId('activesCreateValoracionForm').waitFor({ state: 'visible' });
 
   });
@@ -173,8 +185,8 @@ test('Full Path - Create Active', async ({ page }) => {
   await test.step('Financial valuation Step 1-2', async () => {
   // Financial valuation Step 1-2
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Valoración financiera');
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Sub paso 1 de 2');
+  await expect(stepper).toContainText('Valoración financiera');
+  await expect(stepper).toContainText('Sub paso 1 de 2');
 
 
   await page.getByTestId('activesCreateValoracionForm').click();
@@ -195,8 +207,8 @@ test('Full Path - Create Active', async ({ page }) => {
   await page.locator('bds-form-field', { hasText: 'Vida remanente' }).locator('input').fill('22222');
 
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos10 de 10');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(stepper).toContainText('Campos10 de 10');
+  await nextBtn.click();
   await page.getByTestId('activesCreateResponsableMarca').waitFor({ state: 'visible' });
 
 
@@ -221,9 +233,9 @@ test('Full Path - Create Active', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Municipio de levantamiento' }).fill('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
   await page.getByRole('textbox', { name: 'Localidad de levantamiento' }).fill('222222222222222322323232aaaaaa');
   await page.getByTestId('activesCreateResponsableCodigoCregGeneral').getByText('Código CREG').fill('1aaaa3333333221');
-  await page.getByRole('button', { name: 'Open calendar' }).click();
-  await page.locator('button[aria-current="date"]').waitFor({ state: 'visible' });
-  await page.locator('button[aria-current="date"]').click();
+  await calendarBtn.click();
+  await dateBtn.waitFor({ state: 'visible' });
+  await dateBtn.click();
   await page.getByTestId('activesCreateCaracteristicasPcbs').getByText('PCBS').click();
   await page.locator('mat-option', { hasText: 'No libre de PCB' }).waitFor({ state: 'visible' });
   await page.getByRole('option', { name: 'No libre de PCB' }).click();
@@ -232,8 +244,8 @@ test('Full Path - Create Active', async ({ page }) => {
   await page.getByTestId('activesCreateResponsableSistemaPuestaTierra').getByText('Existe sistema de puesta a tierra').fill('aaaa3');
 
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos19 de 19');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(stepper).toContainText('Campos19 de 19');
+  await nextBtn.click();
   await page.getByRole('textbox', { name: 'Altura apoyo (m)' }).waitFor({ state: 'visible' });
 
   });
@@ -260,8 +272,8 @@ test('Full Path - Create Active', async ({ page }) => {
 
 
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos10 de 10');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(stepper).toContainText('Campos10 de 10');
+  await nextBtn.click();
   await page.getByRole('textbox', { name: 'Nro. fases' }).waitFor({ state: 'visible' });
 
   });
@@ -290,8 +302,8 @@ test('Full Path - Create Active', async ({ page }) => {
 
 
 
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos11 de 11');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(stepper).toContainText('Campos11 de 11');
+  await nextBtn.click();
   await page.getByTestId('activesCreateResponsableAtributosApoyo').waitFor({ state: 'visible' });
 
 
@@ -312,16 +324,16 @@ test('Full Path - Create Active', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Valor CREG apoyo' }).fill('1222222222222222');
   await page.getByRole('textbox', { name: 'Valor CREG conductor' }).fill('1222222222222222');
   await page.getByTestId('activesCreateCodigoFechaFinalPolizasAom').getByRole('button', { name: 'Open calendar' }).click();
-  await page.locator('button[aria-current="date"]').waitFor({ state: 'visible' });
-  await page.locator('button[aria-current="date"]').click();
+  await dateBtn.waitFor({ state: 'visible' });
+  await dateBtn.click();
   await page.getByTestId('activesCreateResponsableNumeroPolizasAom').locator('input').fill('a233333333333333333333sda23333');
   await page.getByTestId('activesCreateCodigoFechaInicialPolizasAom').getByRole('button', { name: 'Open calendar' }).click();
-  await page.locator('button[aria-current="date"]').waitFor({ state: 'visible' });
-  await page.locator('button[aria-current="date"]').click();
-  await expect(page.getByTestId('activesCreateStepper')).toContainText('Campos12 de 12');
-  await page.pause();
-
-
+  await dateBtn.waitFor({ state: 'visible' });
+  await dateBtn.click();
+  await expect(stepper).toContainText('Campos12 de 12');
   await page.getByRole('button', { name: 'Finalizar' }).click();
+  await expect(page.getByText('El activo se registró')).toBeVisible();
+
   });
+});
 });
